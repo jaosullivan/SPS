@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #070c0a;
+  --forest: #0b3d2c;
+  --emerald: #145a40;
+  --leaf: #1f7a56;
+  --gold: #d4af37;
+  --gold-bright: #f0d78c;
+  --saffron: #e07a2f;
+  --bauhinia: #c41e3a;
+  --cream: #f6efe0;
+  --parchment: #e8d9b8;
+  --mist: #c5d4cb;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-emerald: var(--emerald);
+  --color-leaf: var(--leaf);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-saffron: var(--saffron);
+  --color-bauhinia: var(--bauhinia);
+  --color-cream: var(--cream);
+  --color-parchment: var(--parchment);
+  --color-mist: var(--mist);
+  --font-display: var(--font-uncial);
+  --font-serif: var(--font-cinzel);
+  --font-sans: var(--font-source);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-source), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--gold) 45%, transparent);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.font-display {
+  font-family: var(--font-uncial), "Times New Roman", serif;
+}
+
+.font-serif {
+  font-family: var(--font-cinzel), "Times New Roman", serif;
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold) 20%,
+    var(--gold-bright) 50%,
+    var(--gold) 80%,
+    transparent
+  );
+}
