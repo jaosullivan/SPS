@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Crest } from "@/components/crest";
+import { NewTabHint } from "@/components/new-tab-hint";
 import { Knot } from "@/components/ornament";
 import { nav, site } from "@/lib/site";
 
@@ -9,7 +10,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
           <Link href="/" className="inline-flex items-center gap-3">
-            <Crest size={72} className="h-[72px] w-[72px]" />
+            <Crest size={72} alt="" className="h-[72px] w-[72px]" />
             <span>
               <span className="font-serif block text-sm tracking-[0.16em] text-gold uppercase">
                 St. Patrick&apos;s Society
@@ -61,6 +62,7 @@ export function Footer() {
                 target="_blank"
               >
                 Instagram
+                <NewTabHint />
               </a>
             </li>
             <li>
@@ -71,6 +73,7 @@ export function Footer() {
                 target="_blank"
               >
                 Facebook
+                <NewTabHint />
               </a>
             </li>
             <li>
@@ -81,12 +84,13 @@ export function Footer() {
                 target="_blank"
               >
                 X
+                <NewTabHint />
               </a>
             </li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-gold/15 px-4 py-5 text-center text-xs text-cream/50">
+      <div className="border-t border-gold/15 px-4 py-5 text-center text-xs text-cream/70">
         © {new Date().getFullYear()} {site.name}. Replacing the previous Wix
         site at stpatrickshk.com.
       </div>

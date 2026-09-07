@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Crest } from "@/components/crest";
+import { NewTabHint } from "@/components/new-tab-hint";
 import { galleryAlbums, site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function GalaPage() {
               className="mt-7 inline-flex min-h-12 items-center rounded-full bg-saffron px-6 text-sm font-semibold text-ink hover:bg-gold"
             >
               Open the official photo album
+              <NewTabHint />
             </a>
           </div>
           <Crest size={240} priority className="mx-auto h-48 w-48" />
@@ -96,19 +98,20 @@ export default function GalaPage() {
                       <span className="block font-medium text-cream">
                         {album.title}
                       </span>
-                      <span className="text-sm text-cream/60">{album.date}</span>
+                      <span className="text-sm text-cream/70">{album.date}</span>
                     </span>
                     <span className="text-sm font-semibold text-gold">
                       Open album
+                      <NewTabHint />
                     </span>
                   </a>
                 ) : (
                   <div className="flex min-h-20 items-center justify-between gap-4 rounded-2xl border border-gold/15 bg-ink/30 px-5 py-4">
                     <span>
                       <span className="block text-cream">{album.title}</span>
-                      <span className="text-sm text-cream/55">{album.date}</span>
+                      <span className="text-sm text-cream/70">{album.date}</span>
                     </span>
-                    <span className="text-xs tracking-wide text-cream/40 uppercase">
+                    <span className="text-xs tracking-wide text-cream/70 uppercase">
                       Archive
                     </span>
                   </div>
@@ -116,7 +119,7 @@ export default function GalaPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-sm text-cream/60">
+          <p className="mt-8 text-sm text-cream/70">
             Have photographs from a Society event? Send a note to{" "}
             <a href={`mailto:${site.email}`} className="text-gold hover:underline">
               {site.email}
