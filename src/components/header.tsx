@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Crest } from "@/components/crest";
 import { nav, site } from "@/lib/site";
 
@@ -10,12 +10,67 @@ export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const wasOpen = useRef(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      wasOpen.current = true;
+      firstLinkRef.current?.focus();
+
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setOpen(false);
+          return;
+        }
+
+        if (event.key !== "Tab") {
+          return;
+        }
+
+        const focusable = [
+          toggleRef.current,
+          ...Array.from(
+            panelRef.current?.querySelectorAll<HTMLElement>(
+              "a[href], button:not([disabled])",
+            ) ?? [],
+          ),
+        ].filter((node): node is HTMLElement => node !== null);
+
+        if (focusable.length === 0) {
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }
+
+    if (wasOpen.current) {
+      toggleRef.current?.focus();
+    }
   }, [open]);
 
   return (
@@ -66,6 +121,7 @@ export function Header() {
         </nav>
 
         <button
+          ref={toggleRef}
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 text-gold lg:hidden"
           aria-expanded={open}
@@ -81,11 +137,12 @@ export function Header() {
 
       {open ? (
         <div
+          ref={panelRef}
           id={panelId}
           className="border-t border-gold/20 bg-ink px-4 py-4 lg:hidden"
         >
           <nav aria-label="Mobile" className="flex flex-col gap-1">
-            {nav.map((item) => {
+            {nav.map((item, index) => {
               const active =
                 item.href === "/"
                   ? pathname === "/"
@@ -94,6 +151,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  ref={index === 0 ? firstLinkRef : undefined}
                   className={`rounded-lg px-3 py-3 text-base ${
                     active ? "bg-forest text-gold" : "text-cream"
                   }`}

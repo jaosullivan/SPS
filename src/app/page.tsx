@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Crest } from "@/components/crest";
 import { EventList } from "@/components/event-list";
+import { NewTabHint } from "@/components/new-tab-hint";
 import { Knot, ShamrockMark } from "@/components/ornament";
 import { upcomingEvents } from "@/lib/events";
 import { site } from "@/lib/site";
@@ -139,6 +140,7 @@ export default function HomePage() {
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-gold px-6 text-sm font-semibold text-ink hover:bg-gold-bright"
                 >
                   Open the 2026 album
+                  <NewTabHint />
                 </a>
                 <Link
                   href="/gala"

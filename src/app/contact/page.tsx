@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Crest } from "@/components/crest";
+import { NewTabHint } from "@/components/new-tab-hint";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -67,8 +68,9 @@ export default function ContactPage() {
             </p>
             <p className="mt-2 text-xl text-cream">{channel.value}</p>
             {"hint" in channel ? (
-              <p className="mt-2 text-sm text-cream/60">{channel.hint}</p>
+              <p className="mt-2 text-sm text-cream/70">{channel.hint}</p>
             ) : null}
+            {channel.href.startsWith("http") ? <NewTabHint /> : null}
           </a>
         ))}
       </section>

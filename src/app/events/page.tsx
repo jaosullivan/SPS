@@ -72,7 +72,7 @@ export default function EventsPage() {
               </article>
             ))}
           </div>
-          <p className="mt-10 text-sm text-cream/65">
+          <p className="mt-10 text-sm text-cream/70">
             Volunteering and enquiries:{" "}
             <a
               href={`mailto:${site.email}`}
