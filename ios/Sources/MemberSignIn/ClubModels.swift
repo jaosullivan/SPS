@@ -112,20 +112,17 @@ public struct MemberSession: Equatable, Sendable {
         !surfaces.isDisjoint(with: ClubSurface.crmAdminTools)
     }
 
-    /// Session rules are not applied yet: a flagged member still looks like an admin
-    /// and still carries CRM admin tools. Tests must fail until this is tightened.
+    /// Members are not admins, and the only surface they see is their own account.
     public static func forMember(_ account: MemberAccount) -> MemberSession {
-        var flagged = account
-        flagged.isAdmin = true
-        return MemberSession(account: flagged, surfaces: ClubSurface.crmAdminTools.union([.ownAccount]))
+        var member = account
+        member.isAdmin = false
+        return MemberSession(account: member, surfaces: [.ownAccount])
     }
 }
 
 public enum SignInResult: Equatable, Sendable, CustomStringConvertible {
     case signedIn(MemberSession)
     case signedOut
-    /// Sign-in behaviour is intentionally absent until the scenarios have been seen to fail.
-    case notImplemented
 
     public var description: String {
         switch self {
@@ -133,8 +130,6 @@ public enum SignInResult: Equatable, Sendable, CustomStringConvertible {
             "signedIn(\(session.account.fullName))"
         case .signedOut:
             "signedOut"
-        case .notImplemented:
-            "notImplemented"
         }
     }
 }

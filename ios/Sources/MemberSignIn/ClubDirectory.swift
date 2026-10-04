@@ -17,11 +17,24 @@ public struct ClubDirectory: Equatable, Sendable {
     }
 
     public func signIn(email: String, password: String) -> SignInResult {
-        // Scenarios and unit tests are in place before this behaviour.
-        _ = email
-        _ = password
-        _ = members
-        _ = admin
-        return .notImplemented
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let secret = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedEmail.isEmpty, !secret.isEmpty else {
+            return .signedOut
+        }
+
+        // John is the only admin. His identity is not a member session.
+        let adminEmail = admin.email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard normalizedEmail != adminEmail else {
+            return .signedOut
+        }
+
+        guard let known = members.first(where: {
+            $0.account.email.lowercased() == normalizedEmail && $0.password == secret
+        }) else {
+            return .signedOut
+        }
+
+        return .signedIn(MemberSession.forMember(known.account))
     }
 }

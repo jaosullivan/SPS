@@ -16,7 +16,7 @@ public struct MemberSignInScreen: Equatable, Sendable {
         switch result {
         case .signedIn(let session):
             MemberSignInScreen(phase: .showingAccount(session))
-        case .signedOut, .notImplemented:
+        case .signedOut:
             MemberSignInScreen(phase: .signedOut)
         }
     }
