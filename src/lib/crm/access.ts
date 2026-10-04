@@ -86,6 +86,34 @@ export type CrmNavLink = {
   label: CrmManagementArea;
 };
 
+/** Who is asking to open or change club member records. */
+export type MembersActor =
+  | { role: "admin"; session: AdminSession }
+  | { role: "member"; account: MemberAccount }
+  | { role: "anonymous" };
+
+export type MemberRecordChanges = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  companyName: string | null;
+  status: string;
+  greenCardNumber: string | null;
+};
+
+export type MemberUpdateResult =
+  | { outcome: "updated"; member: MemberAccount }
+  | { outcome: "denied" }
+  | { outcome: "notImplemented" };
+
+export type MembersScreen = {
+  phase: "open" | "closed" | "notImplemented";
+  showsCrmManagement: boolean;
+  visibleSections: readonly string[];
+  members: readonly MemberAccount[];
+};
+
 export const ADMIN: AdminHolder = {
   fullName: "John Alan O'Sullivan",
   email: "admin@stpatrickshk.com",
@@ -99,6 +127,13 @@ const CRM_LINKS: readonly CrmNavLink[] = [
   { href: "/crm/companies", label: "Companies" },
   { href: "/crm/deals", label: "Deals" },
 ];
+
+const CLOSED_MEMBERS_SCREEN: MembersScreen = {
+  phase: "closed",
+  showsCrmManagement: false,
+  visibleSections: [],
+  members: [],
+};
 
 const SIGNED_OUT: PrivilegedArea = {
   phase: "signedOut",
@@ -151,6 +186,68 @@ export class CrmAccess {
 
     // Member emails, including a correct member password, are not this area.
     return { outcome: "rejected" };
+  }
+
+  openMembersScreen(actor: MembersActor): MembersScreen {
+    if (!isAdminActor(actor)) {
+      return CLOSED_MEMBERS_SCREEN;
+    }
+    return {
+      phase: "open",
+      showsCrmManagement: true,
+      visibleSections: CRM_MANAGEMENT,
+      members: this.members.map((known) => ({ ...known.account, isAdmin: false })),
+    };
+  }
+
+  updateMember(
+    actor: MembersActor,
+    memberId: number,
+    changes: MemberRecordChanges,
+  ): MemberUpdateResult {
+    if (!isAdminActor(actor)) {
+      return { outcome: "denied" };
+    }
+    const index = this.members.findIndex((known) => known.account.id === memberId);
+    if (index < 0) {
+      return { outcome: "denied" };
+    }
+
+    const firstName = changes.firstName.trim();
+    const lastName = changes.lastName.trim();
+    const email = changes.email.trim();
+    const status = changes.status.trim();
+    if (firstName.length === 0 || lastName.length === 0 || email.length === 0) {
+      return { outcome: "denied" };
+    }
+    if (email.toLowerCase() === this.admin.email.toLowerCase()) {
+      return { outcome: "denied" };
+    }
+    if (!isMembershipStatus(status)) {
+      return { outcome: "denied" };
+    }
+    const emailTaken = this.members.some(
+      (known) =>
+        known.account.id !== memberId &&
+        known.account.email.toLowerCase() === email.toLowerCase(),
+    );
+    if (emailTaken) {
+      return { outcome: "denied" };
+    }
+
+    const account: MemberAccount = {
+      ...this.members[index].account,
+      firstName,
+      lastName,
+      email,
+      phone: blankToNil(changes.phone),
+      companyName: blankToNil(changes.companyName),
+      status,
+      greenCardNumber: blankToNil(changes.greenCardNumber),
+      isAdmin: false,
+    };
+    this.members[index] = { ...this.members[index], account };
+    return { outcome: "updated", member: { ...account } };
   }
 }
 
@@ -214,6 +311,21 @@ export function openAdminSession(
     return null;
   }
   return createAdminSession();
+}
+
+function isAdminActor(
+  actor: MembersActor,
+): actor is { role: "admin"; session: AdminSession } {
+  return actor.role === "admin" && sameAdmin(actor.session.holder);
+}
+
+function isMembershipStatus(value: string): value is MembershipStatus {
+  return value === "active" || value === "lapsed" || value === "complimentary";
+}
+
+function blankToNil(value: string | null) {
+  const trimmed = (value ?? "").trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 function createAdminSession(): AdminSession {
