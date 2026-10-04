@@ -133,3 +133,18 @@ public enum SignInResult: Equatable, Sendable, CustomStringConvertible {
         }
     }
 }
+
+/// Result of a signed-in member changing phone and contact details.
+public enum MemberDetailsUpdate: Equatable, Sendable, CustomStringConvertible {
+    case updated(MemberSession)
+    case denied
+
+    public var description: String {
+        switch self {
+        case .updated(let session):
+            "updated(\(session.account.fullName))"
+        case .denied:
+            "denied"
+        }
+    }
+}
