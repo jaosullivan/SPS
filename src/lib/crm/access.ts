@@ -138,6 +138,18 @@ export type MemberAccountScreen = {
   visibleSections: readonly string[];
 };
 
+/** Phone, email, and company. Name, status, and green card are not on this change. */
+export type OwnDetailsChanges = {
+  phone: string | null;
+  email: string;
+  companyName: string | null;
+};
+
+export type OwnDetailsUpdate =
+  | { outcome: "updated"; session: MemberSession }
+  | { outcome: "denied" }
+  | { outcome: "notImplemented" };
+
 export const ADMIN: AdminHolder = {
   fullName: "John Alan O'Sullivan",
   email: "admin@stpatrickshk.com",
@@ -296,6 +308,49 @@ export class CrmAccess {
       return { outcome: "signedOut" };
     }
     return { outcome: "signedIn", session: memberSession(known.account) };
+  }
+
+  /**
+   * A signed-in member may change only their own phone, email, and company
+   * on the club record. Name, status, and green card stay as they are.
+   * Another member's record is left untouched. This does not open the CRM.
+   */
+  updateOwnDetails(
+    actor: MemberSession,
+    memberId: number,
+    changes: OwnDetailsChanges,
+  ): OwnDetailsUpdate {
+    if (actor.account.isAdmin || actor.account.id !== memberId) {
+      return { outcome: "denied" };
+    }
+    const index = this.members.findIndex((known) => known.account.id === memberId);
+    if (index < 0) {
+      return { outcome: "denied" };
+    }
+
+    const email = changes.email.trim();
+    if (email.length === 0 || email.toLowerCase() === this.admin.email.toLowerCase()) {
+      return { outcome: "denied" };
+    }
+    const emailTaken = this.members.some(
+      (known) =>
+        known.account.id !== memberId &&
+        known.account.email.toLowerCase() === email.toLowerCase(),
+    );
+    if (emailTaken) {
+      return { outcome: "denied" };
+    }
+
+    const current = this.members[index].account;
+    const account: MemberAccount = {
+      ...current,
+      email,
+      phone: blankToNil(changes.phone),
+      companyName: blankToNil(changes.companyName),
+      isAdmin: false,
+    };
+    this.members[index] = { ...this.members[index], account };
+    return { outcome: "updated", session: memberSession(account) };
   }
 }
 
