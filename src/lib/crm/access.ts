@@ -23,6 +23,9 @@ export type CrmManagementArea = (typeof CRM_MANAGEMENT)[number];
 
 export const ADMIN_SESSION_COOKIE = "sps_crm_admin";
 
+/** Website member session. Separate from the CRM admin cookie. */
+export const MEMBER_SESSION_COOKIE = "sps_member";
+
 /** Scenario secret for the admin account. Same development password as the older CRM. */
 export const adminFixturePassword = "changeme";
 
@@ -112,6 +115,27 @@ export type MembersScreen = {
   showsCrmManagement: boolean;
   visibleSections: readonly string[];
   members: readonly MemberAccount[];
+};
+
+/** Website session for a club member. The only surface is their own account. */
+export type MemberSession = {
+  account: MemberAccount;
+  surfaces: readonly ["Account"];
+};
+
+export type MemberSignInResult =
+  | { outcome: "signedIn"; session: MemberSession }
+  | { outcome: "signedOut" }
+  | { outcome: "notImplemented" };
+
+export type MemberAccountScreen = {
+  phase: "account" | "signedOut" | "notImplemented";
+  holderName: string | null;
+  holderEmail: string | null;
+  greenCardNumber: string | null;
+  isAdmin: boolean;
+  showsCrmManagement: boolean;
+  visibleSections: readonly string[];
 };
 
 export const ADMIN: AdminHolder = {
@@ -249,6 +273,12 @@ export class CrmAccess {
     this.members[index] = { ...this.members[index], account };
     return { outcome: "updated", member: { ...account } };
   }
+
+  signInAsMember(email: string, password: string): MemberSignInResult {
+    void email;
+    void password;
+    return { outcome: "notImplemented" };
+  }
 }
 
 export function privilegedCrmArea(result: CrmSignInResult): PrivilegedArea {
@@ -284,6 +314,37 @@ export function sealAdminSession(session: AdminSession): string {
     }),
   ).toString("base64url");
   return `${payload}.${sign(payload)}`;
+}
+
+const MEMBER_ACCOUNT_NOT_IMPLEMENTED: MemberAccountScreen = {
+  phase: "notImplemented",
+  holderName: null,
+  holderEmail: null,
+  greenCardNumber: null,
+  isAdmin: false,
+  showsCrmManagement: false,
+  visibleSections: [],
+};
+
+export function memberAccountScreen(
+  result: MemberSignInResult,
+): MemberAccountScreen {
+  void result;
+  return MEMBER_ACCOUNT_NOT_IMPLEMENTED;
+}
+
+export function sealMemberSession(session: MemberSession): string {
+  void session;
+  return "not-implemented";
+}
+
+export function openMemberSession(
+  token: string | null | undefined,
+  access: CrmAccess,
+): MemberSession | null {
+  void token;
+  void access;
+  return null;
 }
 
 export function openAdminSession(
