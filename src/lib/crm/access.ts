@@ -23,6 +23,9 @@ export type CrmManagementArea = (typeof CRM_MANAGEMENT)[number];
 
 export const ADMIN_SESSION_COOKIE = "sps_crm_admin";
 
+/** Website member session. Separate from the CRM admin cookie. */
+export const MEMBER_SESSION_COOKIE = "sps_member";
+
 /** Scenario secret for the admin account. Same development password as the older CRM. */
 export const adminFixturePassword = "changeme";
 
@@ -112,6 +115,27 @@ export type MembersScreen = {
   showsCrmManagement: boolean;
   visibleSections: readonly string[];
   members: readonly MemberAccount[];
+};
+
+/** Website session for a club member. The only surface is their own account. */
+export type MemberSession = {
+  account: MemberAccount;
+  surfaces: readonly ["Account"];
+};
+
+export type MemberSignInResult =
+  | { outcome: "signedIn"; session: MemberSession }
+  | { outcome: "signedOut" }
+  | { outcome: "notImplemented" };
+
+export type MemberAccountScreen = {
+  phase: "account" | "signedOut" | "notImplemented";
+  holderName: string | null;
+  holderEmail: string | null;
+  greenCardNumber: string | null;
+  isAdmin: boolean;
+  showsCrmManagement: boolean;
+  visibleSections: readonly string[];
 };
 
 export const ADMIN: AdminHolder = {
@@ -249,6 +273,30 @@ export class CrmAccess {
     this.members[index] = { ...this.members[index], account };
     return { outcome: "updated", member: { ...account } };
   }
+
+  /**
+   * Website sign-in for a club member. Uses the email and password already
+   * stored on the member record (the same account as the iPhone app).
+   * This never opens the CRM admin session.
+   */
+  signInAsMember(email: string, password: string): MemberSignInResult {
+    const normalizedEmail = email.trim().toLowerCase();
+    const secret = password.trim();
+    if (normalizedEmail.length === 0 || secret.length === 0) {
+      return { outcome: "signedOut" };
+    }
+    if (normalizedEmail === this.admin.email.toLowerCase()) {
+      return { outcome: "signedOut" };
+    }
+
+    const known = this.members.find(
+      (entry) => entry.account.email.toLowerCase() === normalizedEmail,
+    );
+    if (!known || !sameSecret(secret, known.password)) {
+      return { outcome: "signedOut" };
+    }
+    return { outcome: "signedIn", session: memberSession(known.account) };
+  }
 }
 
 export function privilegedCrmArea(result: CrmSignInResult): PrivilegedArea {
@@ -284,6 +332,93 @@ export function sealAdminSession(session: AdminSession): string {
     }),
   ).toString("base64url");
   return `${payload}.${sign(payload)}`;
+}
+
+const MEMBER_ACCOUNT_NOT_IMPLEMENTED: MemberAccountScreen = {
+  phase: "notImplemented",
+  holderName: null,
+  holderEmail: null,
+  greenCardNumber: null,
+  isAdmin: false,
+  showsCrmManagement: false,
+  visibleSections: [],
+};
+
+const SIGNED_OUT_ACCOUNT: MemberAccountScreen = {
+  phase: "signedOut",
+  holderName: null,
+  holderEmail: null,
+  greenCardNumber: null,
+  isAdmin: false,
+  showsCrmManagement: false,
+  visibleSections: [],
+};
+
+export function memberAccountScreen(
+  result: MemberSignInResult,
+): MemberAccountScreen {
+  if (result.outcome === "notImplemented") {
+    return MEMBER_ACCOUNT_NOT_IMPLEMENTED;
+  }
+  if (result.outcome !== "signedIn" || result.session.account.isAdmin) {
+    return SIGNED_OUT_ACCOUNT;
+  }
+
+  const account = result.session.account;
+  return {
+    phase: "account",
+    holderName: `${account.firstName} ${account.lastName}`,
+    holderEmail: account.email,
+    greenCardNumber: account.greenCardNumber,
+    isAdmin: false,
+    showsCrmManagement: false,
+    visibleSections: ["Account"],
+  };
+}
+
+export function sealMemberSession(session: MemberSession): string {
+  if (session.account.isAdmin) {
+    throw new Error("A member session is not an admin session");
+  }
+  const payload = Buffer.from(
+    JSON.stringify({
+      kind: "member",
+      id: session.account.id,
+    }),
+  ).toString("base64url");
+  return `${payload}.${sign(payload)}`;
+}
+
+export function openMemberSession(
+  token: string | null | undefined,
+  access: CrmAccess,
+): MemberSession | null {
+  if (!token) {
+    return null;
+  }
+  const parts = token.split(".");
+  if (parts.length !== 2) {
+    return null;
+  }
+  const [payload, signature] = parts;
+  if (!payload || !signature || !signaturesMatch(signature, sign(payload))) {
+    return null;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+  if (!isMemberPayload(parsed)) {
+    return null;
+  }
+  const known = access.members.find((entry) => entry.account.id === parsed.id);
+  if (!known) {
+    return null;
+  }
+  return memberSession(known.account);
 }
 
 export function openAdminSession(
@@ -326,6 +461,23 @@ function isMembershipStatus(value: string): value is MembershipStatus {
 function blankToNil(value: string | null) {
   const trimmed = (value ?? "").trim();
   return trimmed.length === 0 ? null : trimmed;
+}
+
+function memberSession(account: MemberAccount): MemberSession {
+  return {
+    account: { ...account, isAdmin: false },
+    surfaces: ["Account"],
+  };
+}
+
+function isMemberPayload(
+  value: unknown,
+): value is { kind: "member"; id: number } {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const record = value as { kind?: unknown; id?: unknown };
+  return record.kind === "member" && typeof record.id === "number";
 }
 
 function createAdminSession(): AdminSession {

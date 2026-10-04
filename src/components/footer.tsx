@@ -42,6 +42,14 @@ export function Footer() {
             ))}
             <li>
               <Link
+                href="/account"
+                className="text-cream/80 transition-colors hover:text-gold"
+              >
+                Account
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/crm/login"
                 className="text-cream/80 transition-colors hover:text-gold"
               >
