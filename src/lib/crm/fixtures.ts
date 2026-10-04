@@ -51,3 +51,15 @@ export function clubDirectory(): CrmAccess {
   }
   return access;
 }
+
+const clubStore = globalThis as typeof globalThis & {
+  __spsWebsiteClub?: CrmAccess;
+};
+
+/** In-memory club records for the running website. Tests use clubDirectory() instead. */
+export function websiteClub(): CrmAccess {
+  if (!clubStore.__spsWebsiteClub) {
+    clubStore.__spsWebsiteClub = clubDirectory();
+  }
+  return clubStore.__spsWebsiteClub;
+}

@@ -55,6 +55,10 @@ npm test
 
 Scenarios: `features/admin_signs_in.feature`.
 
+On Members, the signed-in admin can see Aoife Murphy and Liam Byrne and update their name, email, phone, company, status, and green card. A member session cannot open that screen or see CRM management. Records stay in the website process for this slice. There is no separate member database.
+
+Scenarios: `features/admin_updates_member_records.feature`.
+
 ## Brand assets
 
 Crest files live in `public/`:

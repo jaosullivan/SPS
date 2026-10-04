@@ -128,6 +128,13 @@ const CRM_LINKS: readonly CrmNavLink[] = [
   { href: "/crm/deals", label: "Deals" },
 ];
 
+const CLOSED_MEMBERS_SCREEN: MembersScreen = {
+  phase: "closed",
+  showsCrmManagement: false,
+  visibleSections: [],
+  members: [],
+};
+
 const SIGNED_OUT: PrivilegedArea = {
   phase: "signedOut",
   holderName: null,
@@ -182,12 +189,14 @@ export class CrmAccess {
   }
 
   openMembersScreen(actor: MembersActor): MembersScreen {
-    void actor;
+    if (!isAdminActor(actor)) {
+      return CLOSED_MEMBERS_SCREEN;
+    }
     return {
-      phase: "notImplemented",
-      showsCrmManagement: false,
-      visibleSections: [],
-      members: [],
+      phase: "open",
+      showsCrmManagement: true,
+      visibleSections: CRM_MANAGEMENT,
+      members: this.members.map((known) => ({ ...known.account, isAdmin: false })),
     };
   }
 
@@ -196,10 +205,49 @@ export class CrmAccess {
     memberId: number,
     changes: MemberRecordChanges,
   ): MemberUpdateResult {
-    void actor;
-    void memberId;
-    void changes;
-    return { outcome: "notImplemented" };
+    if (!isAdminActor(actor)) {
+      return { outcome: "denied" };
+    }
+    const index = this.members.findIndex((known) => known.account.id === memberId);
+    if (index < 0) {
+      return { outcome: "denied" };
+    }
+
+    const firstName = changes.firstName.trim();
+    const lastName = changes.lastName.trim();
+    const email = changes.email.trim();
+    const status = changes.status.trim();
+    if (firstName.length === 0 || lastName.length === 0 || email.length === 0) {
+      return { outcome: "denied" };
+    }
+    if (email.toLowerCase() === this.admin.email.toLowerCase()) {
+      return { outcome: "denied" };
+    }
+    if (!isMembershipStatus(status)) {
+      return { outcome: "denied" };
+    }
+    const emailTaken = this.members.some(
+      (known) =>
+        known.account.id !== memberId &&
+        known.account.email.toLowerCase() === email.toLowerCase(),
+    );
+    if (emailTaken) {
+      return { outcome: "denied" };
+    }
+
+    const account: MemberAccount = {
+      ...this.members[index].account,
+      firstName,
+      lastName,
+      email,
+      phone: blankToNil(changes.phone),
+      companyName: blankToNil(changes.companyName),
+      status,
+      greenCardNumber: blankToNil(changes.greenCardNumber),
+      isAdmin: false,
+    };
+    this.members[index] = { ...this.members[index], account };
+    return { outcome: "updated", member: { ...account } };
   }
 }
 
@@ -263,6 +311,21 @@ export function openAdminSession(
     return null;
   }
   return createAdminSession();
+}
+
+function isAdminActor(
+  actor: MembersActor,
+): actor is { role: "admin"; session: AdminSession } {
+  return actor.role === "admin" && sameAdmin(actor.session.holder);
+}
+
+function isMembershipStatus(value: string): value is MembershipStatus {
+  return value === "active" || value === "lapsed" || value === "complimentary";
+}
+
+function blankToNil(value: string | null) {
+  const trimmed = (value ?? "").trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 function createAdminSession(): AdminSession {
