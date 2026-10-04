@@ -28,3 +28,47 @@ jobs:
 
       - name: Build the website image
         run: sudo podman build --isolation=chroot -t sps-website -f Containerfile .
+
+  plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: Terraform init
+        run: terraform -chdir=terraform/website init -input=false
+
+      - name: Start an ephemeral Kubernetes API for planning
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/kind" https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64
+          chmod +x "$RUNNER_TEMP/kind"
+          "$RUNNER_TEMP/kind" create cluster --name sps-plan
+          "$RUNNER_TEMP/kind" get kubeconfig --name sps-plan > "$RUNNER_TEMP/kubeconfig"
+
+      - name: Terraform plan
+        run: |
+          set -euo pipefail
+          terraform -chdir=terraform/website plan \
+            -input=false \
+            -lock=false \
+            -no-color \
+            -out="$RUNNER_TEMP/website.tfplan" \
+            -var "kubeconfig_path=$RUNNER_TEMP/kubeconfig"
+          terraform -chdir=terraform/website show -no-color "$RUNNER_TEMP/website.tfplan" | tee "$RUNNER_TEMP/plan.txt"
+          grep -q 'kubernetes_namespace_v1.website' "$RUNNER_TEMP/plan.txt"
+          grep -q 'kubernetes_deployment_v1.website' "$RUNNER_TEMP/plan.txt"
+          grep -q 'kubernetes_service_v1.website' "$RUNNER_TEMP/plan.txt"
+          grep -q 'localhost/sps-website:latest' "$RUNNER_TEMP/plan.txt"
+          if grep -E -q 'ios/|iPhone|iphone' "$RUNNER_TEMP/plan.txt"; then
+            echo "The iPhone package must not be in the plan."
+            exit 1
+          fi
+          echo "Planned only. This job does not apply."
