@@ -138,6 +138,18 @@ export type MemberAccountScreen = {
   visibleSections: readonly string[];
 };
 
+/** Phone, email, and company. Name, status, and green card are not on this change. */
+export type OwnDetailsChanges = {
+  phone: string | null;
+  email: string;
+  companyName: string | null;
+};
+
+export type OwnDetailsUpdate =
+  | { outcome: "updated"; session: MemberSession }
+  | { outcome: "denied" }
+  | { outcome: "notImplemented" };
+
 export const ADMIN: AdminHolder = {
   fullName: "John Alan O'Sullivan",
   email: "admin@stpatrickshk.com",
@@ -296,6 +308,17 @@ export class CrmAccess {
       return { outcome: "signedOut" };
     }
     return { outcome: "signedIn", session: memberSession(known.account) };
+  }
+
+  updateOwnDetails(
+    actor: MemberSession,
+    memberId: number,
+    changes: OwnDetailsChanges,
+  ): OwnDetailsUpdate {
+    void actor;
+    void memberId;
+    void changes;
+    return { outcome: "notImplemented" };
   }
 }
 
