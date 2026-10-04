@@ -86,6 +86,34 @@ export type CrmNavLink = {
   label: CrmManagementArea;
 };
 
+/** Who is asking to open or change club member records. */
+export type MembersActor =
+  | { role: "admin"; session: AdminSession }
+  | { role: "member"; account: MemberAccount }
+  | { role: "anonymous" };
+
+export type MemberRecordChanges = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  companyName: string | null;
+  status: string;
+  greenCardNumber: string | null;
+};
+
+export type MemberUpdateResult =
+  | { outcome: "updated"; member: MemberAccount }
+  | { outcome: "denied" }
+  | { outcome: "notImplemented" };
+
+export type MembersScreen = {
+  phase: "open" | "closed" | "notImplemented";
+  showsCrmManagement: boolean;
+  visibleSections: readonly string[];
+  members: readonly MemberAccount[];
+};
+
 export const ADMIN: AdminHolder = {
   fullName: "John Alan O'Sullivan",
   email: "admin@stpatrickshk.com",
@@ -151,6 +179,27 @@ export class CrmAccess {
 
     // Member emails, including a correct member password, are not this area.
     return { outcome: "rejected" };
+  }
+
+  openMembersScreen(actor: MembersActor): MembersScreen {
+    void actor;
+    return {
+      phase: "notImplemented",
+      showsCrmManagement: false,
+      visibleSections: [],
+      members: [],
+    };
+  }
+
+  updateMember(
+    actor: MembersActor,
+    memberId: number,
+    changes: MemberRecordChanges,
+  ): MemberUpdateResult {
+    void actor;
+    void memberId;
+    void changes;
+    return { outcome: "notImplemented" };
   }
 }
 
