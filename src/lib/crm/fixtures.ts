@@ -58,8 +58,11 @@ const clubStore = globalThis as typeof globalThis & {
 
 /** In-memory club records for the running website. Tests use clubDirectory() instead. */
 export function websiteClub(): CrmAccess {
-  if (!clubStore.__spsWebsiteClub) {
-    clubStore.__spsWebsiteClub = clubDirectory();
+  const existing = clubStore.__spsWebsiteClub;
+  if (existing && typeof existing.signInAsMember === "function") {
+    return existing;
   }
-  return clubStore.__spsWebsiteClub;
+  const created = clubDirectory();
+  clubStore.__spsWebsiteClub = created;
+  return created;
 }
