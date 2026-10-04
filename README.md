@@ -29,16 +29,16 @@ npm start
 
 No API keys or secrets are required.
 
-## iPhone member sign-in
+## iPhone member app
 
-Club member sign-in for the iPhone app lives in `ios/` (KAN-14). It uses the CRM member fields and does not include CRM admin tools. John is the only admin.
+Club member sign-in and own-details updates for the iPhone app live in `ios/` (KAN-14, KAN-15). They use the CRM member fields and do not include CRM admin tools. John is the only admin. A signed-in member can change their own phone and contact details, and cannot edit another member.
 
 ```bash
 cd ios
 swift test
 ```
 
-Scenarios: `ios/Features/member_signs_in.feature`. See `ios/README.md`.
+Scenarios: `ios/Features/member_signs_in.feature` and `ios/Features/member_updates_own_details.feature`. See `ios/README.md`.
 
 ## Brand assets
 

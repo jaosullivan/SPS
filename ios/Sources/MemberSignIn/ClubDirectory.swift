@@ -37,4 +37,22 @@ public struct ClubDirectory: Equatable, Sendable {
 
         return .signedIn(MemberSession.forMember(known.account))
     }
+
+    /// A signed-in member may change only their own phone and contact details
+    /// (email and company). The outcome is intentionally missing until the
+    /// scenarios and permission tests have been seen to fail.
+    public mutating func updateOwnContactDetails(
+        actor: MemberSession,
+        memberID: Int,
+        phone: String?,
+        email: String,
+        companyName: String?
+    ) -> MemberDetailsUpdate {
+        _ = actor
+        _ = memberID
+        _ = phone
+        _ = email
+        _ = companyName
+        return .notImplemented
+    }
 }
