@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { websiteEarnings } from "@/lib/crm/earnings";
 import { websiteClub } from "@/lib/crm/fixtures";
 import {
   clearMemberSession,
@@ -45,4 +46,23 @@ export async function saveOwnDetails(formData: FormData) {
 
   await writeMemberSession(result.session);
   redirect("/account");
+}
+
+export async function earnOfferAtPlace(formData: FormData) {
+  const session = await readMemberSession();
+  if (!session) {
+    redirect("/account");
+  }
+
+  const place = String(formData.get("place") ?? "");
+  const result = websiteEarnings().earn(
+    websiteClub(),
+    { role: "member", account: session.account },
+    Number(formData.get("memberId")),
+    place,
+  );
+  if (result.outcome !== "earned") {
+    redirect(`/account/partners?error=denied&place=${encodeURIComponent(place)}`);
+  }
+  redirect(`/account/partners?earned=${encodeURIComponent(place)}`);
 }

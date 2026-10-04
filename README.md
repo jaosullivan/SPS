@@ -81,6 +81,10 @@ Scenarios: `features/member_signs_in_on_the_website.feature`.
 
 A signed-in member can open `/account/partners` and see which bars and restaurants are in the rewards program, and what each place offers. This is a list of places, not a points balance. A signed-out visitor is sent back to account sign-in and does not see the list. A member session still does not open CRM management.
 
+On that page a signed-in member can earn the offer the place already states. Sample Harbour Bar is 10% off food and drink for Green Card holders, so only a member with a green card earns it. Sample Lantern Restaurant is a complimentary soft drink with a main course, and a signed-in member can earn that without an extra qualification. The earned offer stays tied to that member and that place. It does not create a points balance, and it does not grant the other place's offer. A signed-out visitor cannot earn either offer. A member cannot earn an offer for another member. Redeeming at the venue is out of scope.
+
+Scenarios: `features/member_earns_partner_offer.feature`.
+
 Neither this website nor the older CRM (`sps-crm`) names real partner venues. The older CRM seeds a gala sponsor, Avolon, which is not a rewards bar or restaurant. The list uses clearly marked sample fixtures: Sample Harbour Bar and Sample Lantern Restaurant.
 
 Scenarios: `features/member_sees_partner_places.feature`.
