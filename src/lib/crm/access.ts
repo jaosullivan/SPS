@@ -274,10 +274,28 @@ export class CrmAccess {
     return { outcome: "updated", member: { ...account } };
   }
 
+  /**
+   * Website sign-in for a club member. Uses the email and password already
+   * stored on the member record (the same account as the iPhone app).
+   * This never opens the CRM admin session.
+   */
   signInAsMember(email: string, password: string): MemberSignInResult {
-    void email;
-    void password;
-    return { outcome: "notImplemented" };
+    const normalizedEmail = email.trim().toLowerCase();
+    const secret = password.trim();
+    if (normalizedEmail.length === 0 || secret.length === 0) {
+      return { outcome: "signedOut" };
+    }
+    if (normalizedEmail === this.admin.email.toLowerCase()) {
+      return { outcome: "signedOut" };
+    }
+
+    const known = this.members.find(
+      (entry) => entry.account.email.toLowerCase() === normalizedEmail,
+    );
+    if (!known || !sameSecret(secret, known.password)) {
+      return { outcome: "signedOut" };
+    }
+    return { outcome: "signedIn", session: memberSession(known.account) };
   }
 }
 
@@ -326,25 +344,81 @@ const MEMBER_ACCOUNT_NOT_IMPLEMENTED: MemberAccountScreen = {
   visibleSections: [],
 };
 
+const SIGNED_OUT_ACCOUNT: MemberAccountScreen = {
+  phase: "signedOut",
+  holderName: null,
+  holderEmail: null,
+  greenCardNumber: null,
+  isAdmin: false,
+  showsCrmManagement: false,
+  visibleSections: [],
+};
+
 export function memberAccountScreen(
   result: MemberSignInResult,
 ): MemberAccountScreen {
-  void result;
-  return MEMBER_ACCOUNT_NOT_IMPLEMENTED;
+  if (result.outcome === "notImplemented") {
+    return MEMBER_ACCOUNT_NOT_IMPLEMENTED;
+  }
+  if (result.outcome !== "signedIn" || result.session.account.isAdmin) {
+    return SIGNED_OUT_ACCOUNT;
+  }
+
+  const account = result.session.account;
+  return {
+    phase: "account",
+    holderName: `${account.firstName} ${account.lastName}`,
+    holderEmail: account.email,
+    greenCardNumber: account.greenCardNumber,
+    isAdmin: false,
+    showsCrmManagement: false,
+    visibleSections: ["Account"],
+  };
 }
 
 export function sealMemberSession(session: MemberSession): string {
-  void session;
-  return "not-implemented";
+  if (session.account.isAdmin) {
+    throw new Error("A member session is not an admin session");
+  }
+  const payload = Buffer.from(
+    JSON.stringify({
+      kind: "member",
+      id: session.account.id,
+    }),
+  ).toString("base64url");
+  return `${payload}.${sign(payload)}`;
 }
 
 export function openMemberSession(
   token: string | null | undefined,
   access: CrmAccess,
 ): MemberSession | null {
-  void token;
-  void access;
-  return null;
+  if (!token) {
+    return null;
+  }
+  const parts = token.split(".");
+  if (parts.length !== 2) {
+    return null;
+  }
+  const [payload, signature] = parts;
+  if (!payload || !signature || !signaturesMatch(signature, sign(payload))) {
+    return null;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+  if (!isMemberPayload(parsed)) {
+    return null;
+  }
+  const known = access.members.find((entry) => entry.account.id === parsed.id);
+  if (!known) {
+    return null;
+  }
+  return memberSession(known.account);
 }
 
 export function openAdminSession(
@@ -387,6 +461,23 @@ function isMembershipStatus(value: string): value is MembershipStatus {
 function blankToNil(value: string | null) {
   const trimmed = (value ?? "").trim();
   return trimmed.length === 0 ? null : trimmed;
+}
+
+function memberSession(account: MemberAccount): MemberSession {
+  return {
+    account: { ...account, isAdmin: false },
+    surfaces: ["Account"],
+  };
+}
+
+function isMemberPayload(
+  value: unknown,
+): value is { kind: "member"; id: number } {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const record = value as { kind?: unknown; id?: unknown };
+  return record.kind === "member" && typeof record.id === "number";
 }
 
 function createAdminSession(): AdminSession {

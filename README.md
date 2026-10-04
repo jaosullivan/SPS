@@ -59,6 +59,20 @@ On Members, the signed-in admin can see Aoife Murphy and Liam Byrne and update t
 
 Scenarios: `features/admin_updates_member_records.feature`.
 
+## Member sign-in
+
+A club member signs in at `/account` with the email and password already stored on their member record, the same account the iPhone app uses. Aoife Murphy and Liam Byrne sign in with the member fixture password. That session shows their own account and does not grant CRM admin access.
+
+John Alan O'Sullivan remains the only admin. His CRM password does not open a member session, and a member password still does not open `/crm`. A member session does not show Dashboard, Members, Sponsors, Companies, or Deals.
+
+The member session is a separate httpOnly cookie. It names the member id and is read back from the same club records the admin updates. Changing a member's email in the CRM changes the account they use to sign in. Editing that profile on the website is a later story.
+
+```bash
+npm test
+```
+
+Scenarios: `features/member_signs_in_on_the_website.feature`.
+
 ## Brand assets
 
 Crest files live in `public/`:

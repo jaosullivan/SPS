@@ -153,7 +153,8 @@ test("a member account shows Account and hides CRM management", () => {
   for (const area of managementNames) {
     assert.equal(screen.visibleSections.includes(area), false);
   }
-  assert.equal(screen.holderName === "Liam Byrne", false);
+  const holderName: string | null = screen.holderName;
+  assert.equal(holderName === "Liam Byrne", false);
 });
 
 test("the admin password does not open a member session", () => {
@@ -194,7 +195,9 @@ test("a member session cookie is not an admin session", () => {
     return;
   }
 
-  assert.equal(MEMBER_SESSION_COOKIE === ADMIN_SESSION_COOKIE, false);
+  const memberCookie: string = MEMBER_SESSION_COOKIE;
+  const adminCookie: string = ADMIN_SESSION_COOKIE;
+  assert.equal(memberCookie === adminCookie, false);
   const token = sealMemberSession(signedIn.session);
   const opened = openMemberSession(token, access);
   assert.equal(opened?.account.id, aoife.id);

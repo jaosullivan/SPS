@@ -257,19 +257,19 @@ function execute(step: ParsedStep, world: World) {
     return;
   }
 
+  if (text === "they do not see an account") {
+    const screen = requireAccountScreen(world, "signedOut");
+    if (screen.holderName || screen.holderEmail || screen.greenCardNumber) {
+      throw new StepFailure("signed-out screen showed an account");
+    }
+    return;
+  }
+
   if (text.startsWith("they do not see ")) {
     const screen = requireAccountScreen(world, "account");
     const name = quotes[0];
     if (name && screen.holderName === name) {
       throw new StepFailure(`account screen showed ${name}`);
-    }
-    return;
-  }
-
-  if (text === "they do not see an account") {
-    const screen = requireAccountScreen(world, "signedOut");
-    if (screen.holderName || screen.holderEmail || screen.greenCardNumber) {
-      throw new StepFailure("signed-out screen showed an account");
     }
     return;
   }
