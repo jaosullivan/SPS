@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  website:
+    name: Test and build the website image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the existing tests
+        run: npm test
+
+      - name: Install Podman
+        run: sudo apt-get update && sudo apt-get install -y podman
+
+      - name: Build the website image
+        run: sudo podman build --isolation=chroot -t sps-website -f Containerfile .

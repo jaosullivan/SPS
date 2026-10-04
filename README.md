@@ -20,6 +20,12 @@ npm run build
 npm start
 ```
 
+A pull request builds this website image with Podman and runs the existing tests. That check does not deploy. The iPhone package under `ios/` is not part of the image.
+
+```bash
+podman build --isolation=chroot -t sps-website -f Containerfile .
+```
+
 ## What’s included
 
 - Home, About, Events, Gala/gallery, and Contact
