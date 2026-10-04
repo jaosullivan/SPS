@@ -40,7 +40,7 @@ test("CRM management areas are the old CRM tools", () => {
 });
 
 test("the public website does not list CRM management", () => {
-  const labels = nav.map((item) => item.label);
+  const labels: readonly string[] = nav.map((item) => item.label);
   for (const area of managementNames) {
     assert.equal(
       labels.includes(area),

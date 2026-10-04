@@ -1,18 +1,12 @@
 import {
   CrmAccess,
+  adminFixturePassword,
+  memberFixturePassword,
   type KnownMember,
   type MemberAccount,
 } from "./access";
 
-/** Scenario secret for club members. Not a production credential. */
-export const memberFixturePassword = "green-card-fixture";
-
-/**
- * Scenario secret for the admin account.
- * Same development password the older CRM login used.
- * Not a production credential.
- */
-export const adminFixturePassword = "changeme";
+export { adminFixturePassword, memberFixturePassword };
 
 export const aoife: MemberAccount = {
   id: 1,
