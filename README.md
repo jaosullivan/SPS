@@ -26,6 +26,7 @@ npm start
 - New official crest as logo, favicon, Apple touch icon, and Open Graph image
 - Upcoming events driven by `src/lib/events.ts` (empty array shows a polished empty state)
 - Green Card membership details on Contact (enquiries via `info@stpatrickshk.com`)
+- Privileged CRM sign-in at `/crm/login` for the admin account holder
 
 No API keys or secrets are required.
 
@@ -39,6 +40,20 @@ swift test
 ```
 
 Scenarios: `ios/Features/member_signs_in.feature`. See `ios/README.md`.
+
+## CRM sign-in
+
+John Alan O'Sullivan (`admin@stpatrickshk.com`) is the only admin. He signs in at `/crm/login` with email and password, the same idea as the older CRM login. The privileged area then shows Dashboard, Members, Sponsors, Companies, and Deals.
+
+A member login is rejected. Aoife Murphy and Liam Byrne are the existing member fixtures, and their password does not open the CRM. The public navigation does not list those management areas.
+
+The admin session is an httpOnly cookie scoped to `/crm`. It names John and is checked on the server. It is not the older CRM's browser token, and it is not a member session. The scenario password `changeme` is the CRM development fixture, not a production credential.
+
+```bash
+npm test
+```
+
+Scenarios: `features/admin_signs_in.feature`.
 
 ## Brand assets
 

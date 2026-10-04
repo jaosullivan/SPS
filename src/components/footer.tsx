@@ -40,6 +40,14 @@ export function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href="/crm/login"
+                className="text-cream/80 transition-colors hover:text-gold"
+              >
+                CRM sign in
+              </Link>
+            </li>
           </ul>
         </div>
 
