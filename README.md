@@ -29,6 +29,17 @@ npm start
 
 No API keys or secrets are required.
 
+## iPhone member sign-in
+
+Club member sign-in for the iPhone app lives in `ios/` (KAN-14). It uses the CRM member fields and does not include CRM admin tools. John is the only admin.
+
+```bash
+cd ios
+swift test
+```
+
+Scenarios: `ios/Features/member_signs_in.feature`. See `ios/README.md`.
+
 ## Brand assets
 
 Crest files live in `public/`:
