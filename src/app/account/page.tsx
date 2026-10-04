@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Crest } from "@/components/crest";
 import { memberAccountScreen } from "@/lib/crm/access";
 import { readMemberSession } from "@/lib/crm/session";
@@ -37,6 +38,12 @@ export default async function AccountPage() {
           </div>
         </div>
         <p className="mt-6 text-cream/75">Your club account.</p>
+        <Link
+          href="/account/partners"
+          className="mt-4 inline-flex text-sm font-semibold text-gold hover:underline"
+        >
+          Partner places
+        </Link>
         <dl className="mt-8 space-y-4 text-sm">
           <div>
             <dt className="text-cream/60">Email</dt>

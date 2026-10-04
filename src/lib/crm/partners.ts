@@ -40,13 +40,23 @@ export type PartnerPlacesScreen = {
   places: readonly PartnerPlace[];
 };
 
+const CLOSED_PARTNER_PLACES: PartnerPlacesScreen = {
+  phase: "closed",
+  showsCrmManagement: false,
+  showsPointsBalance: false,
+  visibleSections: [],
+  places: [],
+};
+
 export function openPartnerPlaces(actor: MembersActor): PartnerPlacesScreen {
-  void actor;
+  if (actor.role !== "member" || actor.account.isAdmin) {
+    return CLOSED_PARTNER_PLACES;
+  }
   return {
-    phase: "notImplemented",
+    phase: "open",
     showsCrmManagement: false,
     showsPointsBalance: false,
-    visibleSections: [],
-    places: [],
+    visibleSections: ["Partner places"],
+    places: SAMPLE_PARTNER_PLACES,
   };
 }
