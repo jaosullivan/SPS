@@ -138,8 +138,6 @@ public enum SignInResult: Equatable, Sendable, CustomStringConvertible {
 public enum MemberDetailsUpdate: Equatable, Sendable, CustomStringConvertible {
     case updated(MemberSession)
     case denied
-    /// Update behaviour is intentionally absent until the scenarios have been seen to fail.
-    case notImplemented
 
     public var description: String {
         switch self {
@@ -147,8 +145,6 @@ public enum MemberDetailsUpdate: Equatable, Sendable, CustomStringConvertible {
             "updated(\(session.account.fullName))"
         case .denied:
             "denied"
-        case .notImplemented:
-            "notImplemented"
         }
     }
 }

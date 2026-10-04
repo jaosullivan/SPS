@@ -18,19 +18,24 @@ public struct MemberDetailsScreen: Equatable, Sendable {
         self.update = update
     }
 
-    /// Own-details behaviour is intentionally absent. The screen does not yet
-    /// show the member's phone and contact details, and it still lists CRM admin tools.
     public static func showing(_ session: MemberSession) -> MemberDetailsScreen {
-        _ = session
-        return MemberDetailsScreen(
-            account: nil,
-            showsAdminTools: true,
-            visibleSections: ClubSurface.crmAdminTools.map(\.title).sorted()
+        MemberDetailsScreen(
+            account: session.account,
+            showsAdminTools: session.showsAdminTools,
+            visibleSections: session.surfaces.map(\.title).sorted()
         )
     }
 
     public func applying(_ update: MemberDetailsUpdate) -> MemberDetailsScreen {
-        _ = update
-        return self
+        switch update {
+        case .updated(let session):
+            var screen = MemberDetailsScreen.showing(session)
+            screen.update = update
+            return screen
+        case .denied:
+            var screen = self
+            screen.update = update
+            return screen
+        }
     }
 }
