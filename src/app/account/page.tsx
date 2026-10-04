@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Crest } from "@/components/crest";
 import { OwnDetailsForm } from "@/components/own-details-form";
 import { memberAccountScreen } from "@/lib/crm/access";
@@ -46,6 +47,12 @@ export default async function AccountPage({
           Update your phone, email, and company. Your name, membership status,
           and green card stay as they are.
         </p>
+        <Link
+          href="/account/partners"
+          className="mt-4 inline-flex text-sm font-semibold text-gold hover:underline"
+        >
+          Partner places
+        </Link>
         {params.error === "denied" ? (
           <p
             role="alert"

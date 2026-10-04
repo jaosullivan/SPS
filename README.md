@@ -77,6 +77,14 @@ npm test
 
 Scenarios: `features/member_signs_in_on_the_website.feature`.
 
+## Partner places
+
+A signed-in member can open `/account/partners` and see which bars and restaurants are in the rewards program, and what each place offers. This is a list of places, not a points balance. A signed-out visitor is sent back to account sign-in and does not see the list. A member session still does not open CRM management.
+
+Neither this website nor the older CRM (`sps-crm`) names real partner venues. The older CRM seeds a gala sponsor, Avolon, which is not a rewards bar or restaurant. The list uses clearly marked sample fixtures: Sample Harbour Bar and Sample Lantern Restaurant.
+
+Scenarios: `features/member_sees_partner_places.feature`.
+
 ## Brand assets
 
 Crest files live in `public/`:
