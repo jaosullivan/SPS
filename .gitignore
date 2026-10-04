@@ -43,3 +43,10 @@ next-env.d.ts
 # Swift
 ios/.build/
 ios/.swiftpm/
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log

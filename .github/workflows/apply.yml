@@ -1,0 +1,35 @@
+name: Apply
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  apply:
+    name: Apply the website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: Refuse to apply without cluster credentials
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KUBECONFIG_CONTENT}" ]; then
+            echo "No Kubernetes cluster credentials are configured. Refusing to apply."
+            echo "This repo has no Terraform backend and no cloud account."
+            exit 1
+          fi
+          printf '%s\n' "$KUBECONFIG_CONTENT" > "$RUNNER_TEMP/kubeconfig"
+          terraform -chdir=terraform/website init -input=false
+          terraform -chdir=terraform/website apply -input=false -auto-approve \
+            -var "kubeconfig_path=$RUNNER_TEMP/kubeconfig"

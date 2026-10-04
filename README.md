@@ -22,6 +22,8 @@ npm start
 
 A pull request builds this website image with Podman and runs the existing tests. That check does not deploy. The iPhone package under `ios/` is not part of the image.
 
+A pull request also plans a Kubernetes deploy of this website (`terraform/website`). The plan does not apply. There is no Terraform backend and no cluster credentials in the repo, so the apply workflow on main refuses to run. The iPhone package is not a pod and is not in the plan.
+
 ```bash
 podman build --isolation=chroot -t sps-website -f Containerfile .
 ```
