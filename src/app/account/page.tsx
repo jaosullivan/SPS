@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Crest } from "@/components/crest";
+import { OwnDetailsForm } from "@/components/own-details-form";
 import { memberAccountScreen } from "@/lib/crm/access";
 import { readMemberSession } from "@/lib/crm/session";
 import { signOutOfAccount } from "./actions";
@@ -15,11 +16,16 @@ function detail(value: string | null) {
   return value && value.length > 0 ? value : "—";
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const session = await readMemberSession();
   const screen = memberAccountScreen(
     session ? { outcome: "signedIn", session } : { outcome: "signedOut" },
   );
+  const params = await searchParams;
 
   if (screen.phase === "account" && session) {
     const account = session.account;
@@ -36,19 +42,22 @@ export default async function AccountPage() {
             </h1>
           </div>
         </div>
-        <p className="mt-6 text-cream/75">Your club account.</p>
+        <p className="mt-6 text-cream/75">
+          Update your phone, email, and company. Your name, membership status,
+          and green card stay as they are.
+        </p>
+        {params.error === "denied" ? (
+          <p
+            role="alert"
+            className="mt-4 rounded-xl border border-bauhinia/40 bg-bauhinia/10 px-3 py-2 text-sm text-cream"
+          >
+            Those details were not saved.
+          </p>
+        ) : null}
         <dl className="mt-8 space-y-4 text-sm">
           <div>
-            <dt className="text-cream/60">Email</dt>
-            <dd className="mt-1 text-cream">{screen.holderEmail}</dd>
-          </div>
-          <div>
-            <dt className="text-cream/60">Phone</dt>
-            <dd className="mt-1 text-cream">{detail(account.phone)}</dd>
-          </div>
-          <div>
-            <dt className="text-cream/60">Company</dt>
-            <dd className="mt-1 text-cream">{detail(account.companyName)}</dd>
+            <dt className="text-cream/60">Name</dt>
+            <dd className="mt-1 text-cream">{screen.holderName}</dd>
           </div>
           <div>
             <dt className="text-cream/60">Status</dt>
@@ -59,7 +68,8 @@ export default async function AccountPage() {
             <dd className="mt-1 text-cream">{detail(screen.greenCardNumber)}</dd>
           </div>
         </dl>
-        <form action={signOutOfAccount} className="mt-10">
+        <OwnDetailsForm member={account} />
+        <form action={signOutOfAccount} className="mt-6">
           <button
             type="submit"
             className="inline-flex min-h-11 items-center rounded-full border border-gold/40 px-4 text-sm text-gold hover:bg-forest/60"

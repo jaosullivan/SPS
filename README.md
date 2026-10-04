@@ -65,7 +65,11 @@ A club member signs in at `/account` with the email and password already stored 
 
 John Alan O'Sullivan remains the only admin. His CRM password does not open a member session, and a member password still does not open `/crm`. A member session does not show Dashboard, Members, Sponsors, Companies, or Deals.
 
-The member session is a separate httpOnly cookie. It names the member id and is read back from the same club records the admin updates. Changing a member's email in the CRM changes the account they use to sign in. Editing that profile on the website is a later story.
+The member session is a separate httpOnly cookie. It names the member id and is read back from the same club records the admin updates. Changing a member's email in the CRM changes the account they use to sign in.
+
+On `/account`, a signed-in member can update their own phone, email, and company. Name, membership status, and green card stay as they are. They cannot edit another member, and the session still does not show CRM management. John remains the only admin.
+
+Scenarios: `features/member_updates_own_details_on_the_website.feature`.
 
 ```bash
 npm test
